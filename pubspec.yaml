@@ -1,0 +1,42 @@
+
+name: myapp
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  webview_flutter: ^4.13.1
+  google_fonts: ^8.0.2
+  flutter_chess_board: ^1.0.1
+  path_provider: ^2.0.11
+  hijri: ^3.0.0
+  intl: ^0.19.0
+  url_launcher: ^6.1.12
+  connectivity_plus: ^6.0.3
+  shared_preferences: ^2.0.15
+  image_picker: ^1.0.4
+  stockfish: ^1.0.0
+  font_awesome_flutter: ^11.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.jpg"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/logo.jpg
+    - assets/images/cat_icon.png
