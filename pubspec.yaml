@@ -21,7 +21,6 @@ dependencies:
   connectivity_plus: ^6.0.3
   shared_preferences: ^2.0.15
   image_picker: ^1.0.4
-  stockfish: ^1.0.0
   font_awesome_flutter: ^11.0.0
   webview_flutter_web: ^0.2.3+4
   firebase_core: ^4.5.0
