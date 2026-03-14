@@ -1,10 +1,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:myapp/offline_screen/chess/chess_screen.dart';
-import 'package:myapp/offline_screen/date_calculator/date_calculator_screen.dart';
-import 'package:myapp/offline_screen/game_2048/game_2048_screen.dart';
-import 'package:myapp/offline_screen/notepad/notepad_screen.dart';
+import 'package:careingo/offline_screen/chess/chess_screen.dart';
+import 'package:careingo/offline_screen/date_calculator/date_calculator_screen.dart';
+import 'package:careingo/offline_screen/game_2048/game_2048_screen.dart';
+import 'package:careingo/offline_screen/notepad/notepad_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class OfflineScreen extends StatelessWidget {
@@ -12,7 +12,7 @@ class OfflineScreen extends StatelessWidget {
 
   Future<void> _launchUrl(BuildContext context, String url) async {
     final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not launch $url')),
       );
@@ -51,7 +51,7 @@ class OfflineScreen extends StatelessWidget {
               onPressed: () {
                 final String amount = amountController.text;
                 if (amount.isNotEmpty) {
-                  final String ussdCode = '*120*0922813618*$amount*1#';
+                  final String ussdCode = '*120*0922813618*$amount*1%23';
                   _launchUrl(context, 'tel:$ussdCode');
                   Navigator.of(context).pop();
                 }
@@ -70,7 +70,7 @@ class OfflineScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Features & More'),
+        title: const Text('Careingo - Features'),
         // Only show the back button if the screen can be popped
         automaticallyImplyLeading: canPop,
       ),
@@ -157,13 +157,13 @@ class OfflineScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildSocialButton(context, 'https://wa.me/218929196425', FontAwesomeIcons.whatsapp, Colors.green),
+                    _buildSocialButton(context, 'https://wa.me/218929196425', FontAwesomeIcons.whatsapp as IconData, Colors.green),
                     const SizedBox(width: 15),
-                    _buildSocialButton(context, 'https://www.instagram.com/artiatechstudio', FontAwesomeIcons.instagram, Colors.purple),
+                    _buildSocialButton(context, 'https://www.instagram.com/artiatechstudio', FontAwesomeIcons.instagram as IconData, Colors.purple),
                     const SizedBox(width: 15),
-                    _buildSocialButton(context, 'https://www.youtube.com/@artiatechstudio', FontAwesomeIcons.youtube, Colors.red),
+                    _buildSocialButton(context, 'https://www.youtube.com/@artiatechstudio', FontAwesomeIcons.youtube as IconData, Colors.red),
                     const SizedBox(width: 15),
-                    _buildSocialButton(context, 'https://twitter.com/artiatechstudio', FontAwesomeIcons.twitter, Colors.blue),
+                    _buildSocialButton(context, 'https://twitter.com/artiatechstudio', FontAwesomeIcons.x as IconData, Colors.black),
                   ],
                 ),
                 const SizedBox(height: 30),
@@ -195,7 +195,7 @@ class OfflineScreen extends StatelessWidget {
         radius: 25,
         backgroundColor: Colors.white,
         child: FaIcon(
-          icon,
+          icon as FaIconData?,
           color: color,
           size: 30,
         ),

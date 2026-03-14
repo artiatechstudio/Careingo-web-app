@@ -1,11 +1,15 @@
-
 import 'package:flutter/material.dart';
-import 'package:myapp/offline_screen/offline_screen.dart';
+import 'package:careingo/offline_screen/offline_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:webview_flutter_web/webview_flutter_web.dart';
 
 void main() {
+  if (kIsWeb) {
+    WebViewPlatform.instance = WebWebViewPlatform();
+  }
   runApp(const MyApp());
 }
 
@@ -15,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Carengo',
+      title: 'Careingo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -59,8 +63,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
+
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
     _checkConnectivity();
 
     _controller = WebViewController()
@@ -118,13 +124,13 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     } else if (!_isOffline && _controller.platform.toString().isEmpty) {
-        // This case handles the initial load when the app starts online.
-        if (mounted) {
-            setState(() {
-                 _isLoading = true;
-            });
-            _controller.loadRequest(Uri.parse('https://carengo.onrender.com'));
-        }
+      // This case handles the initial load when the app starts online.
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+        });
+        _controller.loadRequest(Uri.parse('https://carengo.onrender.com'));
+      }
     }
   }
 
@@ -138,7 +144,39 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 WebViewWidget(controller: _controller),
                 if (_isLoading)
-                  const Center(child: CircularProgressIndicator()),
+                  Container(
+                    color: Colors.white,
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Image.asset(
+                            'assets/images/splash.png',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                        ),
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/logo.jpg',
+                                width: 120,
+                                height: 120,
+                              ),
+                              const SizedBox(height: 40),
+                              const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.blue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
       floatingActionButton: FloatingActionButton(

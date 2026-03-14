@@ -7,7 +7,7 @@ This document outlines the features and design of the Carengo application, a mul
 
 ## Application Flow
 
-*   **Online State:** When the device has an active internet connection, the application displays the `carengo.com` website in a `WebView`. A Floating Action Button (FAB) is overlaid on the screen, allowing users to navigate to the "Features & More" screen.
+*   **Online State:** When the device has an active internet connection, the application displays the `carengo.onrender.com` website in a `WebView`. A Floating Action Button (FAB) is overlaid on the screen, allowing users to navigate to the "Features & More" screen.
 *   **Offline State:** If the device is offline, the application directly displays the "Features & More" screen as the main interface.
 *   **Connectivity Changes:** The app dynamically listens for connectivity changes. If the connection is lost, it switches to the offline view. If the connection is restored, it switches back to the online `WebView` and shows a "You are back online!" notification.
 

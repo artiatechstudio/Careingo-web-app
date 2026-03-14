@@ -45,24 +45,21 @@ class _Game2048ScreenState extends State<Game2048Screen> {
     }
   }
 
-  void _handleSwipe(DragEndDetails details) {
+  void _handleHorizontalSwipe(DragEndDetails details) {
     if (details.primaryVelocity == null) return;
-
-    double dx = details.primaryVelocity!.dx;
-    double dy = details.primaryVelocity!.dy;
-
-    if (dx.abs() > dy.abs()) {
-      if (dx > 0) {
-        _moveRight();
-      } else {
-        _moveLeft();
-      }
+    if (details.primaryVelocity! > 0) {
+      _moveRight();
     } else {
-      if (dy > 0) {
-        _moveDown();
-      } else {
-        _moveUp();
-      }
+      _moveLeft();
+    }
+  }
+
+  void _handleVerticalSwipe(DragEndDetails details) {
+    if (details.primaryVelocity == null) return;
+    if (details.primaryVelocity! > 0) {
+      _moveDown();
+    } else {
+      _moveUp();
     }
   }
 
@@ -141,25 +138,28 @@ class _Game2048ScreenState extends State<Game2048Screen> {
   }
 
   List<int> _transform(List<int> list) {
-    List<int> newList = List.filled(4, 0);
-    int i = 0;
-    for (int j = 0; j < 4; j++) {
-      if (list[j] != 0) {
-        newList[i++] = list[j];
+    // 1. Remove zeros
+    List<int> nonZeros = list.where((x) => x != 0).toList();
+    
+    // 2. Merge tiles
+    List<int> merged = [];
+    for (int i = 0; i < nonZeros.length; i++) {
+      if (i < nonZeros.length - 1 && nonZeros[i] == nonZeros[i + 1]) {
+        int newValue = nonZeros[i] * 2;
+        merged.add(newValue);
+        _score += newValue;
+        i++; // Skip the next tile as it's merged
+      } else {
+        merged.add(nonZeros[i]);
       }
     }
-
-    for (int j = 0; j < 3; j++) {
-      if (newList[j] != 0 && newList[j] == newList[j + 1]) {
-        newList[j] *= 2;
-        _score += newList[j];
-        for (int k = j + 1; k < 3; k++) {
-          newList[k] = newList[k + 1];
-        }
-        newList[3] = 0;
-      }
+    
+    // 3. Fill with zeros to length 4
+    while (merged.length < 4) {
+      merged.add(0);
     }
-    return newList;
+    
+    return merged;
   }
 
   @override
@@ -169,8 +169,8 @@ class _Game2048ScreenState extends State<Game2048Screen> {
         title: const Text('2048 Game'),
       ),
       body: GestureDetector(
-        onVerticalDragEnd: _handleSwipe,
-        onHorizontalDragEnd: _handleSwipe,
+        onVerticalDragEnd: _handleVerticalSwipe,
+        onHorizontalDragEnd: _handleHorizontalSwipe,
         child: Column(
           children: [
             Padding(

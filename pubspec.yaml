@@ -1,5 +1,5 @@
 
-name: myapp
+name: careingo
 description: "A new Flutter project."
 publish_to: 'none'
 version: 1.0.0+1
@@ -23,6 +23,7 @@ dependencies:
   image_picker: ^1.0.4
   stockfish: ^1.0.0
   font_awesome_flutter: ^11.0.0
+  webview_flutter_web: ^0.2.3+4
 
 dev_dependencies:
   flutter_test:
@@ -39,4 +40,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/logo.jpg
-    - assets/images/cat_icon.png
+    - assets/images/splash.png
