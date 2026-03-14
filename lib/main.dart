@@ -1,15 +1,37 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:careingo/offline_screen/offline_screen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:webview_flutter_web/webview_flutter_web.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:firebase_database/firebase_database.dart';
 
-void main() {
-  if (kIsWeb) {
-    WebViewPlatform.instance = WebWebViewPlatform();
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    await MobileAds.instance.initialize();
+    
+    // Request permission for notifications
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
   }
+
   runApp(const MyApp());
 }
 
@@ -42,7 +64,42 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      home: const MyHomePage(),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MyHomePage()),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Image.asset(
+          'assets/images/splash.png',
+          width: 250,
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 }
@@ -58,6 +115,10 @@ class _MyHomePageState extends State<MyHomePage> {
   late final WebViewController _controller;
   bool _isOffline = true;
   bool _isLoading = true;
+  double _loadingProgress = 0.0;
+  bool _isFirstConnectivityCheck = true;
+  bool _isPremiumUser = false;
+  StreamSubscription? _premiumSubscription;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
@@ -69,35 +130,104 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     _checkConnectivity();
 
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (String url) {
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
+    _controller = WebViewController();
+
+    if (!kIsWeb) {
+      _controller
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..addJavaScriptChannel(
+          'CareingoApp',
+          onMessageReceived: (JavaScriptMessage message) {
+            _handleUidReceived(message.message);
           },
-          onWebResourceError: (WebResourceError error) {
-            // Treat any web resource error as being offline
-            if (mounted) {
-              setState(() {
-                _isOffline = true;
-                _isLoading = false;
-              });
-            }
-          },
-        ),
-      );
+        )
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onProgress: (int progress) {
+              if (mounted) {
+                setState(() {
+                  _loadingProgress = progress / 100.0;
+                });
+              }
+            },
+            onPageFinished: (String url) {
+              if (mounted) {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+            },
+            onWebResourceError: (WebResourceError error) {
+              if (mounted) {
+                setState(() {
+                  _isOffline = true;
+                  _isLoading = false;
+                });
+              }
+            },
+          ),
+        );
+    } else {
+      // For Web, delegates are unsupported so we hide the loading screen manually
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _connectivitySubscription.cancel();
+    _premiumSubscription?.cancel();
     super.dispose();
+  }
+
+  void _handleUidReceived(String uid) {
+    if (uid.isEmpty) return;
+    
+    // Cancel existing subscription if any
+    _premiumSubscription?.cancel();
+    
+    // Listen to the user's premium status in Realtime Database
+    // Path assumed: users/UID/isPremium
+    _premiumSubscription = FirebaseDatabase.instance
+        .ref('users/$uid/isPremium')
+        .onValue
+        .listen((DatabaseEvent event) {
+      final data = event.snapshot.value;
+      
+      bool isPremium = false;
+      if (data != null) {
+        // Handle both integer (1/0) and boolean if needed
+        if (data is bool) {
+          isPremium = data;
+        } else if (data is int) {
+          isPremium = data == 1;
+        } else if (data is String) {
+          isPremium = data == "1" || data.toLowerCase() == "true";
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _isPremiumUser = isPremium;
+        });
+        
+        if (isPremium) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم تفعيل وضع البريميوم - تم إخفاء الإعلانات'),
+              backgroundColor: Colors.blueAccent,
+            ),
+          );
+        }
+      }
+    });
   }
 
   Future<void> _checkConnectivity() async {
@@ -107,29 +237,42 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _updateConnectionStatus(List<ConnectivityResult> result) {
     final isNowOffline = result.contains(ConnectivityResult.none);
-    if (isNowOffline != _isOffline) {
+
+    if (_isFirstConnectivityCheck) {
+      _isFirstConnectivityCheck = false;
       if (mounted) {
         setState(() {
           _isOffline = isNowOffline;
-          if (!_isOffline) {
+          if (!isNowOffline) {
+            _isLoading = true;
+          }
+        });
+      }
+      if (!isNowOffline) {
+        _controller.loadRequest(Uri.parse('https://careingo.onrender.com'));
+      }
+      return;
+    }
+
+    if (isNowOffline != _isOffline) {
+      if (mounted) {
+        setState(() {
+          if (!isNowOffline) {
+            _isOffline = false;
             _isLoading = true; // Start loading if we come back online
-            _controller.loadRequest(Uri.parse('https://carengo.onrender.com'));
+            _loadingProgress = 0.0;
+            _controller.loadRequest(Uri.parse('https://careingo.onrender.com'));
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('You are back online!'),
+                content: Text('لقد عدت إلى الاتصال بالإنترنت!'),
                 backgroundColor: Colors.green,
               ),
             );
           }
+          // We don't automatically set _isOffline = true when connection drops.
+          // We keep the WebView active to show cached content.
+          // onWebResourceError will trigger _isOffline = true if navigation fails.
         });
-      }
-    } else if (!_isOffline && _controller.platform.toString().isEmpty) {
-      // This case handles the initial load when the app starts online.
-      if (mounted) {
-        setState(() {
-          _isLoading = true;
-        });
-        _controller.loadRequest(Uri.parse('https://carengo.onrender.com'));
       }
     }
   }
@@ -137,57 +280,25 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _isOffline ? null : AppBar(title: const Text('Carengo')),
-      body: _isOffline
-          ? const OfflineScreen()
-          : Stack(
-              children: [
-                WebViewWidget(controller: _controller),
-                if (_isLoading)
-                  Container(
-                    color: Colors.white,
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Image.asset(
-                            'assets/images/splash.png',
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
-                        ),
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/images/logo.jpg',
-                                width: 120,
-                                height: 120,
-                              ),
-                              const SizedBox(height: 40),
-                              const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.blue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+      body: SafeArea(
+        child: _isOffline
+            ? OfflineScreen(isPremium: _isPremiumUser)
+            : Stack(
+                children: [
+                  WebViewWidget(controller: _controller),
+                  if (_isLoading)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: LinearProgressIndicator(
+                        value: _loadingProgress,
+                        backgroundColor: Colors.transparent,
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                      ),
                     ),
-                  ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const OfflineScreen()),
-          );
-        },
-        tooltip: 'Features & More',
-        child: const Icon(Icons.apps),
+                ],
+              ),
       ),
     );
   }

@@ -166,9 +166,11 @@ class _Game2048ScreenState extends State<Game2048Screen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('2048 Game'),
+        title: const Text('لعبة 2048'),
+        centerTitle: true,
       ),
-      body: GestureDetector(
+      body: SafeArea(
+        child: GestureDetector(
         onVerticalDragEnd: _handleVerticalSwipe,
         onHorizontalDragEnd: _handleHorizontalSwipe,
         child: Column(
@@ -179,12 +181,12 @@ class _Game2048ScreenState extends State<Game2048Screen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Score: $_score',
+                    'النتيجة: $_score',
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   ElevatedButton(
                     onPressed: _startGame,
-                    child: const Text('New Game'),
+                    child: const Text('لعبة جديدة'),
                   ),
                 ],
               ),
@@ -226,7 +228,7 @@ class _Game2048ScreenState extends State<Game2048Screen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Color _getTileColor(int value) {

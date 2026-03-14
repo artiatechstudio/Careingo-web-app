@@ -39,8 +39,12 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Date Calculator'), centerTitle: true),
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        title: const Text('حاسبة التواريخ'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -58,7 +62,7 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
                 child: Column(
                   children: [
                     const Text(
-                      'Base Date',
+                      'تاريخ الأساس',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -115,7 +119,7 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
                 child: Column(
                   children: [
                     const Text(
-                      'Adjustment',
+                      'التعديل',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -127,8 +131,8 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
                         signed: true,
                       ),
                       decoration: InputDecoration(
-                        labelText: 'Number of Days',
-                        hintText: 'e.g. 30 or -30',
+                        labelText: 'عدد الأيام',
+                        hintText: 'مثال: 30 أو -30',
                         prefixIcon: const Icon(Icons.add_road),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -144,7 +148,7 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
                     ElevatedButton.icon(
                       onPressed: _calculateDate,
                       icon: const Icon(Icons.calculate_outlined),
-                      label: const Text('Calculate Result'),
+                      label: const Text('حساب النتيجة'),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
@@ -177,7 +181,7 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
                   child: Column(
                     children: [
                       const Text(
-                        'Calculated Date',
+                        'التاريخ المحسوب',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -188,13 +192,13 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
                       const Divider(),
                       const SizedBox(height: 12),
                       _buildResultRow(
-                        'Gregorian',
+                        'الميلادي',
                         DateFormat('d MMMM y').format(_resultDate!),
                         Icons.event,
                       ),
                       const SizedBox(height: 16),
                       _buildResultRow(
-                        'Hijri',
+                        'الهجري',
                         '${HijriCalendar.fromDate(_resultDate!).hDay} ${HijriCalendar.fromDate(_resultDate!).longMonthName} ${HijriCalendar.fromDate(_resultDate!).hYear}',
                         Icons.auto_awesome,
                       ),
@@ -205,7 +209,7 @@ class _DateCalculatorScreenState extends State<DateCalculatorScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildResultRow(String label, String value, IconData icon) {

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "726919145424",
+    "firebase_url": "https://studio-6598686877-c9281-default-rtdb.firebaseio.com",
+    "project_id": "studio-6598686877-c9281",
+    "storage_bucket": "studio-6598686877-c9281.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726919145424:android:227325dd6b53ce158f7bd5",
+        "android_client_info": {
+          "package_name": "ly.artiatechstudio.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmlsmMtWPjUKGQR4ZRcYz7SHdZ49Tx2nQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
